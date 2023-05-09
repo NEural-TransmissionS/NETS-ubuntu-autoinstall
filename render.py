@@ -21,10 +21,10 @@ def main():
     context = json.loads(os.environ['JINJA_CONFIG'])
     # Render template with context
     content = render(template, env=os.environ, **context)
-    print(content)
+    save('user-data', content)
 
 if __name__ == '__main__':
-    if os.environ.get("JINJA_CONFIG",0) == 0:
+    if os.environ["JINJA_CONFIG"] == "":
         os.environ["JINJA_CONFIG"] = """{
             "username": "ubuntu",
             "hostname": "ubuntu-server",
