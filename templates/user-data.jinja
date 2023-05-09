@@ -1,0 +1,76 @@
+#cloud-config
+autoinstall:
+  version: 1
+  refresh-installer:
+    update: true
+  identity:
+    hostname: {{ hostname }}
+    username: {{ username }}
+    realname: {{ username }}
+    password: {{ hashed_password }}
+  ssh:
+    install-server: true
+{%- if (ssh_pubkey is defined and ssh_pubkey != "") or (github_username is defined and github_username != "") %}
+    allow-pw: false
+{%- endif %}
+  storage:
+    layout:
+      name: lvm
+{%- if luks_key is defined and luks_key != "" %}
+      password: {{ luks_key }}
+{%- endif %}
+      sizing-policy: all
+      match:
+        path: /dev/nvme0n1
+  ubuntu-pro:
+{%- if ubuntu_pro_token is defined and ubuntu_pro_token != "" %}
+    token: {{ ubuntu_pro_token }}
+{%- endif %}
+  snaps:
+{%- if ubuntu_pro_token is defined and ubuntu_pro_token != "" %}
+    - name: canonical-livepatch
+      channel: stable
+{%- endif %}
+  packages:
+{%- if luks_key is defined and luks_key != "" %}
+    - clevis
+    - clevis-tpm2
+    - clevis-luks
+    - clevis-initramfs
+    - initramfs-tools
+{%- endif %}
+  late-commands:
+{%- if luks_key is defined and luks_key != "" %}
+    - curtin in-target --target=/target -- bash -c "echo {{ luks_key }} | clevis luks bind -d /dev/nvme0n1p3 tpm2 '{\"pcr_bank\":\"sha256\",\"pcr_ids\":\"7\"}'"
+    - curtin in-target --target=/target -- update-initramfs -u -k all
+{%- endif %}
+  user-data: # Cloud-init starts here after reboot
+    ssh_pwauth: false
+    users:
+      - name: {{ username }}
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        hashed_passwd: {{ hashed_password }}
+        lock_passwd: false
+{%- if ssh_pubkey is defined and ssh_pubkey != "" %}
+        ssh_authorized_keys:
+          - {{ ssh_pubkey }}
+{%- endif %}
+{%- if github_username is defined and github_username != "" %}
+        ssh_import_id:
+          - gh:{{ github_username }}
+{%- endif %}
+    package_update: true
+    package_upgrade: true
+    packages:
+      - nvidia-headless-525-server
+      - nvidia-utils-525-server
+{%- if (netbird_setupkey is defined and netbird_setupkey != "" and netbird_url is defined and netbird_url != "") %}
+    runcmd:
+      - apt-get update
+      - apt-get install ca-certificates curl gnupg -y
+      - curl -sSL https://pkgs.wiretrustee.com/debian/public.key | gpg --dearmor --output /usr/share/keyrings/wiretrustee-archive-keyring.gpg
+      - echo 'deb [signed-by=/usr/share/keyrings/wiretrustee-archive-keyring.gpg] https://pkgs.wiretrustee.com/debian stable main' | tee /etc/apt/sources.list.d/wiretrustee.list
+      - apt-get update
+      - apt-get install netbird
+      - netbird up --setup-key {{ netbird_setupkey }} --management-url {{ netbird_url }}
+{%- endif %}
