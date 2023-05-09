@@ -1,0 +1,11 @@
+{
+    "username": "johndoe",
+    "hostname": "example-host",
+    "hashed_password": "hashedpassword",
+    "luks_key": "lukskey",
+    "ubuntu_pro_token": "ubuntuprotoken",
+    "ssh_pubkey": "ssh-rsa ...",
+    "github_username": "johndoe",
+    "netbird_setupkey": "NETBIRD_KEY",
+    "netbird_url": "NETBIRD_URL"
+}
