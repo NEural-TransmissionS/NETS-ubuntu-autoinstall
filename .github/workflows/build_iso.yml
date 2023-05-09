@@ -30,12 +30,21 @@ jobs:
         env:
           JINJA_CONFIG: ${{ secrets.JINJA_CONFIG }}
         run: python render.py
+
+      - name: Clone pxeless
+        uses: actions/checkout@v3
+        with:
+          repository: cloudymax/pxeless
+          path: pxeless
+
+      - name: Move user-data
+        run: mv user-data pxeless/user-data
         
       - name: Build ISO
         uses: addnab/docker-run-action@v3
         with:
           image: deserializeme/pxeless
-          options: -v ${{ github.workspace }}:/data
+          options: --volume ${{ github.workspace }}/pxeless:/data
           run: /data/image-create.sh -a -u user-data -e -n ${{ github.event.inputs.ubuntu-version }} -r
       
       - name: Rename ISO
