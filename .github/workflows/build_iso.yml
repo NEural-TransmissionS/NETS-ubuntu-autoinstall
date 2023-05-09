@@ -35,7 +35,7 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: deserializeme/pxeless
-          options: --volume ${{ github.workspace }}:/data
+          options: -v ${{ github.workspace }}:/data
           run: -a -u user-data -e -n ${{ github.event.inputs.ubuntu-version }} -r
       
       - name: Rename ISO
