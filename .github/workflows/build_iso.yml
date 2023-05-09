@@ -1,0 +1,28 @@
+name: Build ISO
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.6.0
+        with:
+          python-version: 3.8
+          check-latest: true
+      
+      - name: Setting up Jinja2
+        run: |
+          pip install jinja2
+          
+      - name: Render Jinja template
+        env:
+          JINJA_CONFIG: ${{ secrets.JINJA_CONFIG }}
+        run: python render.py
+        
+      - name: Check render
+        run: cat user-data
