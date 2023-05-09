@@ -2,6 +2,13 @@ name: Build ISO
 
 on:
   workflow_dispatch:
+    inputs:
+      ubuntu-version:
+        description: 'Ubuntu version to build'
+        type: choice
+        required: true
+        default: 'focal'
+        options: ['focal', 'jammy']
 
 jobs:
   build:
@@ -24,5 +31,18 @@ jobs:
           JINJA_CONFIG: ${{ secrets.JINJA_CONFIG }}
         run: python render.py
         
-      - name: Check render
-        run: cat user-data
+      - name: Build ISO
+        uses: addnab/docker-run-action@v3
+        with:
+          image: deserializeme/pxeless
+          options: --volume ${{ github.workspace }}:/data
+          run: -a -u user-data -e -n ${{ github.event.inputs.ubuntu-version }} -r
+      
+      - name: Rename ISO
+        run: mv ubuntu-autoinstall.iso ubuntu-autoinstall-${{ github.event.inputs.ubuntu-version }}.iso
+      
+      - name: Upload the custom image
+        uses: actions/upload-artifact@v3
+        with:
+          name: Autoinstall ISO
+          path: ubuntu-autoinstall-${{ github.event.inputs.ubuntu-version }}.iso
