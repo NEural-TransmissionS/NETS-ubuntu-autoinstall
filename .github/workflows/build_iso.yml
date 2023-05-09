@@ -38,8 +38,8 @@ jobs:
           options: --volume ${{ github.workspace }}:/data
           run: -a -u user-data -e -n ${{ github.event.inputs.ubuntu-version }} -r
       
-      - name: Rename ISO
-        run: mv ubuntu-autoinstall.iso ubuntu-autoinstall-${{ github.event.inputs.ubuntu-version }}.iso
+      - name: Move ISO to working folder
+        run: mv pxeless/ubuntu-autoinstall.iso ubuntu-autoinstall-${{ github.event.inputs.ubuntu-version }}.iso
       
       - name: Upload the custom image
         uses: actions/upload-artifact@v3
