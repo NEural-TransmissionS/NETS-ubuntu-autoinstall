@@ -36,7 +36,7 @@ jobs:
         with:
           image: deserializeme/pxeless
           options: -v ${{ github.workspace }}:/data
-          run: -a -u user-data -e -n ${{ github.event.inputs.ubuntu-version }} -r
+          run: /data/image-create.sh -a -u user-data -e -n ${{ github.event.inputs.ubuntu-version }} -r
       
       - name: Rename ISO
         run: mv ubuntu-autoinstall.iso ubuntu-autoinstall-${{ github.event.inputs.ubuntu-version }}.iso
